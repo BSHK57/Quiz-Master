@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Setup</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .setup-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        h2 {
+            color: #2563eb;
+            margin-top: 0;
+            border-bottom: 1px solid #eaeaea;
+            padding-bottom: 1rem;
+        }
+        p {
+            font-size: 1.1rem;
+            background-color: #f0f7ff;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            border-left: 3px solid #2563eb;
+            font-weight: 500;
+        }
+        h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: #4b5563;
+            font-size: 1.1rem;
+        }
+        label {
+            display: block;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        label:hover {
+            background-color: #f9fafb;
+        }
+        input[type="radio"] {
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+        input[type="radio"]:checked + span {
+            font-weight: 500;
+            color: #2563eb;
+        }
+        label:has(input[type="radio"]:checked) {
+            background-color: #f0f7ff;
+            border-color: #2563eb;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 1.5rem;
+            border-radius: 6px;
+            background-color: #16a34a;
+            color: white;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: #15803d;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <h2>Setup Your Quiz</h2>
+        <p>Subject: {{ subject }}</p>
+        <form method="post">
+            {% csrf_token %}
+            <h3>Select Difficulty Level</h3>
+            <label>
+                <input type="radio" name="difficulty" value="easy" required>
+                <span>Easy</span>
+            </label>
+            <label>
+                <input type="radio" name="difficulty" value="medium">
+                <span>Medium</span>
+            </label>
+            <label>
+                <input type="radio" name="difficulty" value="hard">
+                <span>Hard</span>
+            </label>
+            
+            <h3>How many questions would you like to attempt?</h3>
+            <input type="number" name="question_count" min="1" required placeholder="Enter number of questions">
+            
+            <button type="submit">Start Quiz</button>
+        </form>
+    </div>
