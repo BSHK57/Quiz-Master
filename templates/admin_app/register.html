@@ -1,22 +1,62 @@
+{% load static %}
+
 <!DOCTYPE html>
+
 <html>
+
 <head>
     <title>Register</title>
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"> -->
+    <link rel="stylesheet" href="/templates/admin_app/css/styles.css">
+
 </head>
+
 <body>
-    <h2>Register</h2>
-    <form method="post">
-        {% csrf_token %}
-        <table>
-            {% for field in form %}
-                <tr>
-                    <th>{{ field.label_tag }}</th>
-                    <td>{{ field }}</td>
+    <div class="container mt-4">
+        <h2 class="mb-4">Register</h2>
+
+        <form method="post">
+            {% csrf_token %}
+            <table class="table table-bordered">
+                {% for field in form %}
+                <tr class="form-group" id="row_{{ field.name }}">
+                    <th><label for="{{ field.id_for_label }}">{{ field.label }}:</label></th>
+                    <td>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="alert alert-danger mt-1">
+                            {{ field.errors|first }}
+                        </div>
+                        {% endif %}
+                    </td>
                 </tr>
-            {% endfor %}
-        </table>
-        <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                {% endfor %}
+            </table>
+
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+
+        <p class="mt-3">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let roleField = document.querySelector("[name='role']");
+            let eduRow = document.getElementById("row_educational_level");
+            let subjectRow = document.getElementById("row_subject_specialization");
+            let experienceRow = document.getElementById("row_experience");
+
+            function toggleFields() {
+                let role = roleField.value;
+                eduRow.style.display = (role === "student") ? "table-row" : "none";
+                subjectRow.style.display = (role === "educator") ? "table-row" : "none";
+                experienceRow.style.display = (role === "educator") ? "table-row" : "none";
+            }
+
+            roleField.addEventListener("change", toggleFields);
+            toggleFields();
+        });
+    </script>
 </body>
+
 </html>

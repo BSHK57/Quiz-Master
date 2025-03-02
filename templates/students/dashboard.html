@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Student Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h2 {
+            font-size: 32px;
+            color: #4CAF50;
+        }
+        label {
+            font-weight: bold;
+        }
+        select, button {
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .faculty-list {
+            margin-top: 20px;
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Welcome to Student Dashboard</h2>
+<p style="font-size: 24px;">Hello, {{ user.username }}!</p>
+<p>Here you can select your subjects and view the faculty handling them.</p>
+
+<!-- Error Message Block -->
+{% if error_message %}
+    <p class="error-message">{{ error_message }}</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <label for="subject">Select Subject:</label>
+    <select name="subject" id="subject">
+        <option value="">-- Select Subject --</option>
+        <option value="Maths">Maths</option>
+        <option value="Biology">Biology</option>
+        <option value="Chemistry">Chemistry</option>
+        <option value="Physics">Physics</option>
+        <option value="Computer Science">Computer Science</option>
+
+        <!-- Subjects from database (optional) -->
+        {% for subject in subjects %}
+            <option value="{{ subject.id }}" {% if selected_subject and subject.id == selected_subject.id %}selected{% endif %}>
+                {{ subject.name }}
+            </option>
+        {% endfor %}
+    </select>
+    <button type="submit">Show Faculty</button>
+</form>
+
+{% if selected_subject %}
+    <div class="faculty-list">
+        <h3>Faculty Handling {{ selected_subject.name }}:</h3>
+        {% if faculty_list %}
+            <ul>
+                {% for faculty in faculty_list %}
+                    <li>{{ faculty.user.username }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="error-message">No faculty exists for this subject.</p>
+        {% endif %}
+    </div>
+{% endif %}
+
+<p><a href="{% url 'logout' %}">Logout</a></p>
+
+</body>
+</html>

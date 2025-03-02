@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Educator Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h2 {
+            font-size: 28px;
+            color: #4CAF50;
+        }
+        .form-section {
+            margin: 20px 0;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .message {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Welcome to Educator Dashboard</h2>
+<p>Hello, {{ user.username }}!</p>
+<p>You can select the subjects you teach below.</p>
+
+{% if messages %}
+    <div class="message">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-section">
+        <label>Select Subjects:</label><br>
+        <div class="checkbox-group">
+            {% for subject in subjects %}
+                <label>
+                    <input type="checkbox" name="subjects" value="{{ subject.name }}"
+                        {% if subject.name in selected_subject_names %}checked{% endif %}>
+                    {{ subject.name }}
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+    <button type="submit">Save Subjects</button>
+</form>
+
+<p><a href="{% url 'logout' %}">Logout</a></p>
+
+</body>
+</html>

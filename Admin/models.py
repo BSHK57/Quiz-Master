@@ -24,6 +24,7 @@ class User(AbstractUser):
     ('Other', 'Other'),
     )
     email = models.EmailField(unique=True)
+    name= models.CharField(max_length=100,default="")
     dob = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
     address = models.TextField(blank=True)
