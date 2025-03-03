@@ -7,117 +7,177 @@
     <style>
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #f5f7fa;
+            background-color: #f5f5ff;
             margin: 0;
             padding: 0;
             color: #333;
         }
-        .setup-container {
-            max-width: 600px;
+        
+        .container {
+            max-width: 800px;
             margin: 2rem auto;
             padding: 2rem;
             background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
-        h2 {
-            color: #2563eb;
-            margin-top: 0;
-            border-bottom: 1px solid #eaeaea;
+        
+        .header {
+            margin-bottom: 2rem;
+            border-bottom: 3px solid #6c47ff;
             padding-bottom: 1rem;
         }
-        p {
-            font-size: 1.1rem;
-            background-color: #f0f7ff;
-            padding: 0.75rem 1rem;
-            border-radius: 6px;
-            border-left: 3px solid #2563eb;
-            font-weight: 500;
+        
+        h2 {
+            color: #333;
+            margin-top: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
         }
-        h3 {
-            margin-top: 1.5rem;
+        
+        .subject-badge {
+            display: inline-block;
+            background-color: #f0f0ff;
+            color: #6c47ff;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .section-title {
+            color: #555;
+            margin-top: 2rem;
             margin-bottom: 1rem;
-            color: #4b5563;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
         }
-        label {
+        
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .option-card {
+            position: relative;
+            border-radius: 8px;
+            border: 1px solid #e0e0f0;
+            overflow: hidden;
+        }
+        
+        .option-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .option-card label {
             display: block;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
+            padding: 1rem;
+            text-align: center;
             cursor: pointer;
+            font-weight: 500;
             transition: all 0.2s;
         }
-        label:hover {
-            background-color: #f9fafb;
+        
+        /* Default hover state */
+        .option-card input[type="radio"]:not(:checked) + label:hover {
+            background-color: #f0f0ff;
         }
-        input[type="radio"] {
-            margin-right: 0.5rem;
-            cursor: pointer;
-        }
-        input[type="radio"]:checked + span {
-            font-weight: 500;
-            color: #2563eb;
-        }
-        label:has(input[type="radio"]:checked) {
-            background-color: #f0f7ff;
-            border-color: #2563eb;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 0.75rem;
-            border-radius: 6px;
-            border: 1px solid #d1d5db;
-            font-size: 1rem;
-            margin-top: 0.5rem;
-        }
-        input[type="number"]:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            margin-top: 1.5rem;
-            border-radius: 6px;
-            background-color: #16a34a;
+        
+        /* Easy - Green */
+        .option-card input[type="radio"]#easy:checked + label {
+            background-color: #4caf50;
             color: white;
-            font-weight: 500;
+            font-weight: 600;
+        }
+        
+        /* Medium - Yellow */
+        .option-card input[type="radio"]#medium:checked + label {
+            background-color: #ffc107;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        /* Hard - Red */
+        .option-card input[type="radio"]#hard:checked + label {
+            background-color: #f44336;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .number-input-container {
+            margin-bottom: 2rem;
+        }
+        
+        .number-input {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e0e0f0;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .number-input:focus {
+            outline: none;
+            border-color: #6c47ff;
+            box-shadow: 0 0 0 3px rgba(108, 71, 255, 0.1);
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: #6c47ff;
+            color: white;
+            font-weight: 600;
             border: none;
             cursor: pointer;
             transition: background-color 0.2s;
             font-size: 1rem;
         }
-        button:hover {
-            background-color: #15803d;
+        
+        .submit-btn:hover {
+            background-color: #5a3cd5;
         }
     </style>
 </head>
 <body>
-    <div class="setup-container">
-        <h2>Setup Your Quiz</h2>
-        <p>Subject: {{ subject }}</p>
+    <div class="container">
+        <div class="header">
+            <h2>Setup Your Quiz</h2>
+            <div class="subject-badge">{{ subject }}</div>
+        </div>
+        
         <form method="post">
             {% csrf_token %}
-            <h3>Select Difficulty Level</h3>
-            <label>
-                <input type="radio" name="difficulty" value="easy" required>
-                <span>Easy</span>
-            </label>
-            <label>
-                <input type="radio" name="difficulty" value="medium">
-                <span>Medium</span>
-            </label>
-            <label>
-                <input type="radio" name="difficulty" value="hard">
-                <span>Hard</span>
-            </label>
             
-            <h3>How many questions would you like to attempt?</h3>
-            <input type="number" name="question_count" min="1" required placeholder="Enter number of questions">
+            <div class="section-title">Select Difficulty Level</div>
+            <div class="options-container">
+                <div class="option-card">
+                    <input type="radio" id="easy" name="difficulty" value="easy" required>
+                    <label for="easy">Easy</label>
+                </div>
+                <div class="option-card">
+                    <input type="radio" id="medium" name="difficulty" value="medium">
+                    <label for="medium">Medium</label>
+                </div>
+                <div class="option-card">
+                    <input type="radio" id="hard" name="difficulty" value="hard">
+                    <label for="hard">Hard</label>
+                </div>
+            </div>
             
-            <button type="submit">Start Quiz</button>
+            <div class="section-title">How many questions would you like to attempt?</div>
+            <div class="number-input-container">
+                <input type="number" name="question_count" min="1" required placeholder="Enter number of questions" class="number-input">
+            </div>
+            
+            <button type="submit" class="submit-btn">Start Quiz</button>
         </form>
     </div>
+</body>
+</html>
