@@ -88,11 +88,11 @@
                 <i class="fas fa-brain"></i>
                 <span>QuizMaster</span>
             </div>
-            <a href="{% url 'educator_dashboard' %}" class="nav-item active">
+            <a href="{% url 'educator_dashboard' %}" class="nav-item">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{% url 'edu_quizzes' %}" class="nav-item">
+            <a href="{% url 'edu_quizzes' %}" class="nav-item active">
                 <i class="fas fa-book"></i>
                 <span>My Quizzes</span>
             </a>
@@ -117,8 +117,8 @@
         <div class="content">
             <div class="header">
                 <div class="header-title">
-                    <h1>Educator Dashboard</h1>
-                    <p>Welcome back, {{ educator.user.name }}</p>
+                    <h1>My Quizzes</h1>
+                    <p>Manage your created quizzes and track student performance</p>
                 </div>
                 <div class="user-menu">
                     <div class="avatar fas fa-user-circle profile-icon">{{ educator_initials }}</div>
@@ -133,66 +133,63 @@
                 </div>
             </div>
 
-            <div class="stats-container">
-                <div class="stat-card">
-                    <h3>Active Students</h3>
-                    <div class="value">{{ stats.total_students }}</div>
-                    <!-- <div class="change">+{{ student_growth }} this week</div> -->
-                </div>
-                <div class="stat-card">
-                    <h3>Total Quizzes</h3>
-                    <div class="value">{{ stats.total_quizzes }}</div>
-                    <!-- <div class="change">+{{ quiz_growth }} this month</div> -->
-                </div>
-                <div class="stat-card">
-                    <h3>Avg. Completion Rate</h3>
-                    <div class="value">{{ stats.avg_completion_rate }}%</div>
-                    <!-- <div class="change">+{{ completion_growth }}% from last month</div> -->
-                </div>
-                <div class="stat-card">
-                    <h3>Avg. Score</h3>
-                    <div class="value">{{ stats.avg_score }}%</div>
-                    <!-- <div class="change">+{{ score_growth }}% from last term</div> -->
-                </div>
-            </div>
-
-            <div class="section-header">
-                <div class="section-title">Recent Quizzes</div>
-                <button class="btn" onclick="window.location.href='/create-quiz/'">
-                    <i class="fas fa-plus"></i> Create New Quiz
-                </button>
-            </div>
-
             <div class="search-container">
                 <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search quizzes, students, or topics...">
+                <input type="text" id="search-bar" placeholder="Search quizzes..." onkeyup="filterQuizzes()">
             </div>
 
             <div class="quiz-grid">
-                {% for quiz in quizzes %}
-                <div class="quiz-card">
+                {% for quiz_info in quiz_data %}
+                <div class="quiz-card" data-title="{{ quiz_info.quiz.title }}">
                     <div class="quiz-header">
-                        <h3>{{ quiz.title }}</h3>
+                        <h3>{{ quiz_info.quiz.title }}</h3>
                     </div>
                     <div class="quiz-body">
-                        <p>{{ quiz.title }} • {{ quiz.num_questions }} Questions</p>
+                        <p>{{ quiz_info.num_questions }} Questions</p>
                         <div class="quiz-stats">
                             <div class="quiz-stat">
-                                <div class="value">{{ quiz.completion_rate }}%</div>
+                                <div class="value">{{ quiz_info.completion_rate }}%</div>
                                 <div class="label">Completion</div>
                             </div>
                             <div class="quiz-stat">
-                                <div class="value">{{ quiz.avg_score }}%</div>
+                                <div class="value">{{ quiz_info.avg_score }}%</div>
                                 <div class="label">Avg. Score</div>
                             </div>
                             <div class="quiz-stat">
-                                <div class="value">{{ quiz.students_count1 }}</div>
+                                <div class="value">{{ quiz_info.students_count }}</div>
                                 <div class="label">Students</div>
                             </div>
                         </div>
                         <div class="quiz-actions">
-                            <a href="{% url 'edit_quiz' quiz.id %}"><button>Edit</button></a>
-                            <a href="{% url 'view_results' quiz.id %}"><button>View Results</button></a>
+                            <a href="{% url 'edit_quiz' quiz_info.quiz.id %}"><button>Edit</button></a>
+                            <a href="{% url 'view_results' quiz_info.quiz.id %}"><button>View Results</button></a>
+                        </div>
+                    </div>
+                    <div class="quiz-students">
+                        <h4>Student Attempts</h4>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Attempts</th>
+                                        <th>Success Rate (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in quiz_info.student_attempts %}
+                                    <tr>
+                                        <td><strong>{{ student.student }}</strong></td>
+                                        <td>{{ student.attempts }}</td>
+                                        <td>{{ student.success_rate }}%</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td>No attempts yet.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -203,8 +200,24 @@
         </div>
     </div>
 
-</div>
+   
 
+    <script>
+        function filterQuizzes() {
+            let input = document.getElementById('search-bar').value.toLowerCase();
+            let quizCards = document.querySelectorAll('.quiz-card');
+
+            quizCards.forEach(card => {
+                let title = card.getAttribute('data-title').toLowerCase();
+                if (title.includes(input)) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+    </script>
 </body>
+
 
 </html>

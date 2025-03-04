@@ -166,8 +166,41 @@ body {
 }
 
 .user-menu {
+    position: relative;
+    cursor: pointer;
     display: flex;
     align-items: center;
+}
+
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: -30%;
+    left: -100%;
+    background: linear-gradient(135deg, rgba(106, 17, 203, 0.1) 0%, rgba(37, 117, 252, 0.1) 100%);
+    border: 1px solid #ddd;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    /* min-width: 120px; */
+    border-radius: 15px;
+    z-index: 100;
+}
+
+.user-dropdown a {
+    display: flex;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+}
+
+.user-dropdown a:hover {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);;
+    color: white;
+    border-radius: 10px;
+}
+
+.user-menu:hover .user-dropdown {
+    display: flex;
+    flex-direction: column;
 }
 
 .user-menu .avatar {
@@ -200,11 +233,13 @@ body {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    z-index: -1;
 }
 
 .stat-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 7px 15px rgba(37, 117, 252, 0.2);
+    
 }
 
 .stat-card h3 {
@@ -258,7 +293,13 @@ body {
     background: linear-gradient(to bottom, var(--primary), var(--secondary));
     border-radius: 2px;
 }
-
+.tabs {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap:5px;
+}
 .btn {
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     color: white;
@@ -518,6 +559,38 @@ tr td:last-child {
     border-color: var(--secondary);
     box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.2);
     transform: translateY(-2px);
+}
+
+.chart-container{
+    height: 400px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+.quiz-students{
+    padding: 5px;
+}
+.table-container{
+    max-height: 250px; 
+    overflow-y: auto;
+    border: 1px solid #ddd;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+thead {
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
 }
 
 @media (max-width: 768px) {

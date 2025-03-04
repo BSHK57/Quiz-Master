@@ -41,18 +41,22 @@ from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Educator
 from django.forms import modelformset_factory
-from django.db.models import Count, Avg
+from django.db.models import Count, Avg,F, Q
 from django.db import models
 from .forms import FullQuizForm,QuizForm, QuestionForm, OptionForm
 from Quizzes.models import Quiz, Question, Option,StudentQuizAttempt
+from django.db.models import Q
+from datetime import timedelta
+from django.utils.timezone import now
 
 def educator_dashboard(request):
     educator = Educator.objects.get(user=request.user)
     
     # Fetch all quizzes created by the educator
     quizzes = Quiz.objects.filter(educator=educator).annotate(
+        students_count1=Count('studentquizattempt__student', distinct=True),
         students_count=Count('studentquizattempt', distinct=True),
-        num_questions=Count('question'),
+        num_questions=Count('question',distinct=True),
         
         avg_score=Avg('studentquizattempt__score')
     )
@@ -64,12 +68,7 @@ def educator_dashboard(request):
         total_students = quiz.students_count or 1  # Avoid division by zero
         quiz.completion_rate = round((total_attempts / total_students) * 100, 2) if total_attempts else 0
         quiz.avg_score = round(quiz.avg_score or 0, 2)
-        print(quiz.num_questions)
-    for quiz in quizzes:
-        quiz.avg_questions_per_student = (
-        quiz.num_questions // quiz.students_count
-        if quiz.students_count else 0
-    )
+
     # Overall statistics
     students_attempts = StudentQuizAttempt.objects.filter(quiz__educator=educator)
     total_students = students_attempts.values('student').distinct().count()
@@ -90,12 +89,79 @@ def educator_dashboard(request):
         'educator': educator
     })
 
+
+@login_required
+def students_board(request):
+    educator = get_object_or_404(Educator, user=request.user)
+    query = request.GET.get('q', '')
+    # Fetch all quiz attempts for quizzes created by this educator
+    student_attempts = StudentQuizAttempt.objects.filter(quiz__educator=educator).select_related('student', 'quiz')
+    if query:
+        student_attempts = student_attempts.filter(
+            Q(student__user__name__icontains=query) | Q(quiz__title__icontains=query)
+        )
+    # Organize student attempts data
+    student_data = {}
+    for attempt in student_attempts:
+        student_name = attempt.student.user.name
+        if student_name not in student_data:
+            student_data[student_name] = []
+        student_data[student_name].append({
+            'quiz_title': attempt.quiz.title,
+            'score': attempt.score,
+            'completed_at': attempt.completed_at
+        })
+
+    return render(request, 'educators/students_board.html', {'student_data': student_data,'query': query,'educator':educator})
+
+
+@login_required
+def my_quizzes(request):
+    educator = get_object_or_404(Educator, user=request.user)
+
+    # Fetch all quizzes created by the educator
+    quizzes = Quiz.objects.filter(educator=educator).annotate(
+        students_count1=Count('studentquizattempt__student', distinct=True),
+        students_count=Count('studentquizattempt', distinct=True),
+        num_questions=Count('question',distinct=True),
+        avg_score=Avg('studentquizattempt__score')
+    )
+    # Fetch student attempts related to the educator's quizzes
+    student_attempts = StudentQuizAttempt.objects.filter(quiz__educator=educator).select_related('student__user')
+
+    # Prepare quiz statistics
+    quiz_data = []
+    for quiz in quizzes:
+        print(quiz.num_questions)
+        attempts = student_attempts.filter(quiz=quiz)
+        total_attempts = attempts.count()
+        unique_students = quiz.students_count or 1  # Avoid division by zero
+
+        quiz_data.append({
+            'quiz': quiz,
+            'num_questions': quiz.num_questions,
+            'students_count': quiz.students_count1,
+            'total_attempts': total_attempts,
+            'avg_score': round(quiz.avg_score or 0, 2),
+            'completion_rate': round((total_attempts / unique_students) * 100, 2) if total_attempts else 0,
+            'student_attempts': [
+                {
+                    'student': attempt.student.user.name,
+                    'attempts': student_attempts.filter(student=attempt.student, quiz=quiz).count(),
+                    'success_rate': round(attempt.score, 2)
+                }
+                for attempt in student_attempts.filter(quiz=quiz)
+            ]
+        })
+    print(quiz_data)
+    return render(request, 'educators/my_quizzes.html', {'quiz_data': quiz_data,'educator':educator})
+
+
 @login_required
 
 def create_quiz(request):
     if request.method == "POST":
         form = FullQuizForm(request.POST)
-        print("pp")
         if form.is_valid():
             # Save the Quiz
             quiz = Quiz.objects.create(title=form.cleaned_data['quiz_title'], educator=request.user.educator)
@@ -167,3 +233,92 @@ def view_results(request, quiz_id):
         'avg_score': round(avg_score, 2),
         'completion_rate': completion_rate,
     })
+from django.core.serializers.json import DjangoJSONEncoder
+import json
+
+@login_required
+def educator_analytics(request):
+    educator = get_object_or_404(Educator, user=request.user)
+
+    # 1. Student Performance Overview (Bar Chart)
+    student_scores = list(
+        StudentQuizAttempt.objects.filter(quiz__educator=educator)
+        .values(student_name=F('student__user__name'))
+        .annotate(avg_score=Avg('score'))
+        .order_by('-avg_score')
+    )
+
+    # 2. Quiz Performance Over Time (Line Chart)
+    quiz_performance = list(
+        Quiz.objects.filter(educator=educator)
+        .values('created_at')
+        .annotate(avg_score=Avg('studentquizattempt__score'))
+        .order_by('created_at')
+    )
+    print(quiz_performance)
+    # Convert datetime to string for JSON serialization
+    for item in quiz_performance:
+        item['created_at'] = item['created_at'].strftime('%Y-%m-%d')
+
+    # 3. Subject-wise Quiz Performance (Pie Chart)
+    subject_quiz_count = list(
+        Quiz.objects.filter(educator=educator)
+        .values('subject')
+        .annotate(total=Count('id'))
+    )
+
+    # 4. Question Difficulty Analysis (Horizontal Bar Chart)
+    question_difficulty = list(
+        Question.objects.filter(quiz__educator=educator) \
+            .annotate(correct_answers=Count('quiz__studentquizattempt', filter=Q(quiz__studentquizattempt__score__gt=0))) \
+            .values('text', 'correct_answers')
+    )
+
+    # 5. Quiz Attempt Frequency (Line Chart)
+    time_range = now() - timedelta(days=30)  # Last 30 days
+    quiz_attempts_over_time = list(
+        StudentQuizAttempt.objects.filter(quiz__educator=educator, completed_at__gte=time_range)
+        .values('completed_at__date')
+        .annotate(attempt_count=Count('id'))
+        .order_by('completed_at__date')
+    )
+
+    # Convert datetime to string
+    for item in quiz_attempts_over_time:
+        item['completed_at__date'] = item['completed_at__date'].strftime('%Y-%m-%d')
+
+    # 6. Top Performers in a Quiz (Bar Chart)
+    top_performers = list(
+        StudentQuizAttempt.objects.filter(quiz__educator=educator)
+        .values(student_name=F('student__user__name'), quiz_title=F('quiz__title'))
+        .annotate(score=Avg('score'))
+        .order_by('-score')[:5]
+    )
+
+    # 7. Pass/Fail Ratio per Quiz (Doughnut Chart)
+    pass_fail_ratio = list(
+        StudentQuizAttempt.objects.filter(quiz__educator=educator)
+        .annotate(passed=Count('id', filter=Q(score__gte=50)), failed=Count('id', filter=Q(score__lt=50)))
+        .values('quiz__title', 'passed', 'failed')
+    )
+
+    # 8. Educator's Quiz Distribution (Pie Chart)
+    quiz_distribution = list(
+        Quiz.objects.filter(educator=educator)
+        .values('subject')
+        .annotate(total=Count('id'))
+    )
+
+    context = {
+        "student_scores": json.dumps(student_scores, cls=DjangoJSONEncoder),
+        "quiz_performance": json.dumps(quiz_performance, cls=DjangoJSONEncoder),
+        "subject_quiz_count": json.dumps(subject_quiz_count, cls=DjangoJSONEncoder),
+        "question_difficulty": json.dumps(question_difficulty, cls=DjangoJSONEncoder),
+        "quiz_attempts_over_time": json.dumps(quiz_attempts_over_time, cls=DjangoJSONEncoder),
+        "top_performers": json.dumps(top_performers, cls=DjangoJSONEncoder),
+        "pass_fail_ratio": json.dumps(pass_fail_ratio, cls=DjangoJSONEncoder),
+        "quiz_distribution": json.dumps(quiz_distribution, cls=DjangoJSONEncoder),
+        'educator':educator,
+    }
+
+    return render(request, "educators/analytics.html", context)

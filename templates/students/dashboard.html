@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <title>Student Dashboard</title>
     <style>
         body {
@@ -444,9 +445,10 @@
         <div class="dashboard-title">Welcome back, {{ user.username }}!</div>
         
         <div class="user-profile">
-            <div class="profile-pic">S</div>
+            <div class="profile-pic fas fa-user-circle profile-icon"></div>
+            <!-- <div class="profile-pic"></div> -->
             <div class="user-info">
-                <div class="user-name">{{ user.first_name }} {{ user.last_name }}</div>
+                <div class="user-name">{{ user.name }}</div>
                 <div class="user-department">Student</div>
             </div>
         </div>

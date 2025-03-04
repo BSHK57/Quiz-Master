@@ -56,6 +56,7 @@ def quiz_dashboard(request):
         "subject_scores": subject_scores,
         "leaderboard": leaderboard,
         "recommendations": recommendations,
+        "user":request.user,
     }
     context['scores'] = json.dumps(scores if scores else [])
     context['labels'] = json.dumps(labels if labels else [])
