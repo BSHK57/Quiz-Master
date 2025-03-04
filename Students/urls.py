@@ -8,10 +8,9 @@ urlpatterns = [
     path('student/quiz_setup/', views.quiz_setup, name='quiz_setup'),
     path('student/quiz_questions/', views.quiz_questions, name='quiz_questions'),
     path('student/quiz_result/<int:correct>/<int:wrong>/<str:score>/', views.quiz_result, name='quiz_result'),
-<<<<<<< HEAD
-    path('quiz_dashboard/', quiz_dashboard, name='quiz_dashboard')
 
-=======
+    path('quiz_dashboard/', quiz_dashboard, name='quiz_dashboard'),
+
     path('my_quizzes/', views.my_quizzes, name='my_quizzes'),
->>>>>>> af3fa11cd00479967976de64027d8c12cf11bfeb
+
 ]

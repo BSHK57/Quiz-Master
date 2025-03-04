@@ -423,34 +423,21 @@
                 <i class="fas fa-brain"></i>
                 <span>QuizMaster</span>
             </div>
+            <a href="{% url 'student_dashboard' %}">
             <div class="nav-item">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
-            </div>
+            </div></a>
             <div class="nav-item active">
-                <i class="fas fa-chart-bar"></i>
+                <i class="fas ">📈</i>
                 <span>My Performance</span>
             </div>
+            <a href="{% url 'my_quizzes' %}">
             <div class="nav-item">
                 <i class="fas fa-book"></i>
-                <span>My Quizzes</span>
-            </div>
-            <div class="nav-item">
-                <i class="fas fa-trophy"></i>
-                <span>Leaderboard</span>
-            </div>
-            <div class="nav-item">
-                <i class="fas fa-lightbulb"></i>
-                <span>Recommendations</span>
-            </div>
-            <div class="nav-item">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-            </div>
-            <div class="nav-item">
-                <i class="fas fa-question-circle"></i>
-                <span>Help</span>
-            </div>
+                <div>My Quizzes</div>
+            </div></a>
+            
         </div>
         
         <div class="content">
@@ -661,7 +648,6 @@
         }
 
         function downloadReport() {
-            console.log(context, scores);
             // This would be implemented to call the download_report URL
             window.location.href = '{% url "download_report" %}';
         }
