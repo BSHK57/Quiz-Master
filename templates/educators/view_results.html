@@ -61,7 +61,7 @@
                         <tr>
                             <td>{{ attempt.student.user.username }}</td>
                             <td>{{ attempt.score }}%</td>
-                            <td>{{ attempt.attempted_at }}</td>
+                            <td>{{ attempt.completed_at|date:"d-m-Y" }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
