@@ -6,13 +6,14 @@ class Quiz(models.Model):
     title = models.CharField(max_length=255)
     educator = models.ForeignKey(Educator, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    subject = models.CharField(max_length=100, default='General')
 
     def __str__(self):
         return self.title
 
 class Question(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    text = models.CharField(max_length=300)
+    text = models.TextField()
 
     def __str__(self):
         return self.text
