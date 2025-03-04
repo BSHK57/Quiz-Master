@@ -7,4 +7,5 @@ urlpatterns = [
     path('student/quiz_setup/', views.quiz_setup, name='quiz_setup'),
     path('student/quiz_questions/', views.quiz_questions, name='quiz_questions'),
     path('student/quiz_result/<int:correct>/<int:wrong>/<str:score>/', views.quiz_result, name='quiz_result'),
+    path('my_quizzes/', views.my_quizzes, name='my_quizzes'),
 ]
