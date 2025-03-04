@@ -5,6 +5,7 @@ from Educators.models import Educator
 from Students.models import Subject,Student
 from Quizzes.models import Quiz,Question,Option,StudentQuizAttempt
 import random
+from django.db.models import Avg, Max
 @login_required
 def student_dashboard(request):
     subjects = Subject.objects.all()
@@ -106,3 +107,50 @@ def quiz_result(request, correct, wrong, score):
         'score': score
     })
 
+def my_quizzes(request):
+    print("My Quizzes View Accessed")
+
+    student = Student.objects.get(user=request.user)  
+
+    # Fetch all subjects the student is enrolled in (from ManyToMany relation)
+    # Fetch selected subject from dropdown filter (from GET request)
+    selected_subject = request.GET.get('subject')
+    
+    # Fetch quiz attempts for logged-in student, optionally filtered by subject
+    attempts = (
+        StudentQuizAttempt.objects
+        .filter(student=student)
+        .select_related('quiz')
+        .order_by('quiz__title', '-completed_at')
+    )
+
+    if selected_subject:
+        attempts = attempts.filter(quiz__subject__name=selected_subject)
+
+    # Total unique quizzes attempted
+    total_quizzes_attempted = len(set(attempt.quiz_id for attempt in attempts))
+
+    # Average and highest scores
+    average_score = attempts.aggregate(Avg('score'))['score__avg'] or 0
+    highest_score = attempts.aggregate(Max('score'))['score__max'] or 0
+
+    # Group attempts by quiz title
+    quizzes = {}
+    for attempt in attempts:
+        quiz_title = attempt.quiz.title
+        if quiz_title not in quizzes:
+            quizzes[quiz_title] = []
+        quizzes[quiz_title].append(attempt)
+
+    # Context for the template
+    context = {
+        'quizzes': quizzes,
+        'total_quizzes_attempted': total_quizzes_attempted,
+        'average_score': round(average_score, 2),
+        'highest_score': highest_score,
+        # Pass all subjects for dropdown
+        'selected_subject': selected_subject,  # Pass selected subject (if any)
+        'no_attempts_message': 'No quizzes attempted for this subject. Start now!' if selected_subject and not attempts else None
+    }
+
+    return render(request, 'students/my_quizzes.html', context)

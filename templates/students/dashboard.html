@@ -432,29 +432,9 @@
         <div>Dashboard</div>
     </a>
     
-    <a href="#" class="menu-item">
+    <a href="{% url 'my_quizzes' %}" class="menu-item">
         <div class="menu-icon">📝</div>
         <div>My Quizzes</div>
-    </a>
-    
-    <a href="#" class="menu-item">
-        <div class="menu-icon">👥</div>
-        <div>Classmates</div>
-    </a>
-
-    <a href="#" class="menu-item">
-        <div class="menu-icon">🏆</div>
-        <div>Achievements</div>
-    </a>
-    
-    <a href="#" class="menu-item">
-        <div class="menu-icon">⚙️</div>
-        <div>Settings</div>
-    </a>
-    
-    <a href="#" class="menu-item">
-        <div class="menu-icon">❓</div>
-        <div>Help</div>
     </a>
 </div>
 
@@ -521,7 +501,6 @@
             {% if faculty_list %}
                 {% for faculty in faculty_list %}
                     <div class="faculty-card">
-                        <img src="/static/images/default-profile.png" alt="{{ faculty.user.username }}">
                         <div class="faculty-info">
                             <h4 class="faculty-name">{{ faculty.user.username }}</h4>
                             <p class="faculty-subject">{{ selected_subject.name }} Faculty</p>

@@ -71,7 +71,7 @@ def login_user(request):
 
 def logout_user(request):
     logout(request)
-    return redirect('login')
+    return redirect('home')
 def forgot_password_step1(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -103,3 +103,5 @@ def forgot_password_step2(request, email):
         messages.success(request, "Your password has been reset successfully.")
         return redirect('login')
     return render(request, 'admin_app/forgot_password_step2.html', {'email': email})
+def home(request):
+    return render(request, 'admin_app/home.html')
