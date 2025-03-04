@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-43ggn!92ajq_$6e_et!z(u0m6cbq4v036kk%!4!y6kxk*1#!-_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -64,7 +64,7 @@ ROOT_URLCONF = 'STEAM_HACKATHON.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
