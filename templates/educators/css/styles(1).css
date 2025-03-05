@@ -176,7 +176,7 @@ body {
     display: none;
     position: absolute;
     top: -30%;
-    left: -100%;
+    left: -70%;
     background: linear-gradient(135deg, rgba(106, 17, 203, 0.1) 0%, rgba(37, 117, 252, 0.1) 100%);
     border: 1px solid #ddd;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
@@ -190,6 +190,7 @@ body {
     padding: 10px;
     text-decoration: none;
     color: black;
+    margin-right: 0;
 }
 
 .user-dropdown a:hover {
@@ -214,6 +215,7 @@ body {
     justify-content: center;
     font-weight: bold;
     margin-right: 15px;
+    margin-left: 0;
 }
 
 .stats-container {

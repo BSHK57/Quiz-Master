@@ -48,7 +48,8 @@ from Quizzes.models import Quiz, Question, Option,StudentQuizAttempt
 from django.db.models import Q
 from datetime import timedelta
 from django.utils.timezone import now
-
+from django.contrib import messages
+import pandas as pd
 def educator_dashboard(request):
     educator = Educator.objects.get(user=request.user)
     
@@ -108,7 +109,7 @@ def students_board(request):
             student_data[student_name] = []
         student_data[student_name].append({
             'quiz_title': attempt.quiz.title,
-            'score': attempt.score,
+            'score': round(attempt.score,0),
             'completed_at': attempt.completed_at
         })
 
@@ -322,3 +323,57 @@ def educator_analytics(request):
     }
 
     return render(request, "educators/analytics.html", context)
+def upload_questions(request):
+    if request.method == 'POST':
+        uploaded_file = request.FILES.get('questions_file')
+        quiz_id = request.POST.get('quiz_id')
+
+        if not uploaded_file.name.endswith('.xlsx'):
+            messages.error(request, "Only Excel files (.xlsx) are allowed.")
+            return redirect('upload_questions')
+
+        try:
+            df = pd.read_excel(uploaded_file)
+
+            required_columns = ['question_text', 'option1', 'option2', 'option3', 'option4', 'correct_option']
+            for col in required_columns:
+                if col not in df.columns:
+                    messages.error(request, f'Missing column in file: {col}\nRequired Format {required_columns}')
+                    return redirect('upload_questions')
+
+            quiz = Quiz.objects.get(id=quiz_id)
+
+            for _, row in df.iterrows():
+                # Create the Question object
+                question = Question.objects.create(
+                    quiz=quiz,
+                    text=row['question_text']
+                )
+
+                # Create options
+                options = []
+                correct_option_text = str(row['correct_option']).strip()
+
+                for i in range(1, 5):
+                    option_text = str(row[f'option{i}']).strip()
+                    is_correct = (option_text == correct_option_text)
+
+                    option = Option(
+                        question=question,
+                        text=option_text,
+                        is_correct=is_correct
+                    )
+                    options.append(option)
+
+                # Bulk create options (better performance)
+                Option.objects.bulk_create(options)
+
+            messages.success(request, 'Questions and options uploaded successfully!')
+            return redirect('upload_questions')
+
+        except Exception as e:
+            messages.error(request, f'Error processing file: {e}')
+            return redirect('upload_questions')
+
+    quizzes = Quiz.objects.all()
+    return render(request, 'educators/upload_questions.html', {'quizzes': quizzes})

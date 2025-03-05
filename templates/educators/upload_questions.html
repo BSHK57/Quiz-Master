@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Upload Questions</title>
+    <link rel="stylesheet" href="/templates/educators/css/styles-create.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/templates/educators/css/styles(1).css">
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        select, input[type="file"] {
+            padding: 10px;
+            width: fit-content;
+        }
+        button{
+            width: fit-content;
+        }
+        .message {
+            margin-bottom: 15px;
+            color: green;
+        }
+        .error {
+            margin-bottom: 15px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-brain"></i>
+            <span>QuizMaster</span>
+        </div>
+        <a href="{% url 'educator_dashboard' %}" class="nav-item active">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="{% url 'edu_quizzes' %}" class="nav-item">
+            <i class="fas fa-book"></i>
+            <span>My Quizzes</span>
+        </a>
+        <a href="{% url 'Students_board' %}" class="nav-item">
+            <i class="fas fa-users"></i>
+            <span>Students</span>
+        </a>
+        <a href="{% url 'educator_analytics' %}" class="nav-item">
+            <i class="fas fa-chart-bar"></i>
+            <span>Analytics</span>
+        </a>
+        
+        
+    </div>
+<div class="content">
+    <h1>Upload Questions</h1>
+    <div class="form-container" style="width: fit-content;">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="{% if message.tags == 'error' %}error{% else %}message{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+        
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="quiz">Select Quiz:</label>
+        <select name="quiz_id" id="quiz" required>
+            <option value="">--Select Quiz--</option>
+            {% for quiz in quizzes %}
+                <option value="{{ quiz.id }}">{{ quiz.title }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="file">Upload Excel File:</label>
+        <input type="file" name="questions_file" accept=".xlsx" required>
+
+        <button type="submit" class="btn-primary">Upload Questions</button>
+    </form>
+    </div>
+</div></div>
+</body>
+</html>

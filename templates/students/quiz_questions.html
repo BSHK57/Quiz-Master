@@ -135,6 +135,8 @@
         }
     </style>
 </head>
+
+
 <body>
     <div class="container">
         <h2>Quiz Questions</h2>
@@ -142,24 +144,113 @@
         {% if message %}
             <div class="error-message">{{ message }}</div>
         {% else %}
-            <form method="post">
+            <form method="post" id="quiz-form">
                 {% csrf_token %}
 
                 {% for question in questions %}
-                    <fieldset>
+                    <fieldset class="question" id="question_{{ question.id }}" style="display: none;">
                         <legend>{{ question.text }}</legend>
-                        {% for option in question.options.all %}
-                            <label>
-                                <input type="radio" name="question_{{ question.id }}" value="{{ option.id }}" required>
-                                <span>{{ option.text }}</span>
-                            </label>
-                        {% endfor %}
+                        <button type="button" onclick="readQuestion()">🔊 Read</button>
+                        <ul id="options_{{ question.id }}">
+                            {% for option in question.options.all %}
+                                <li>
+                                    <label>
+                                        <input type="radio" name="question_{{ question.id }}" value="{{ option.id }}" required>
+                                        <span id="option_{{ question.id }}_{{ forloop.counter }}">Option {{ forloop.counter }}: {{ option.text }}</span>
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
                     </fieldset>
                 {% endfor %}
 
-                <button type="submit">Submit Quiz</button>
+                <button type="button" id="prevBtn" onclick="prevQuestion()" style="display: none;">Previous</button>
+                <button type="button" id="nextBtn" onclick="nextQuestion()">Next</button>
+                <button type="submit" id="submitBtn" style="display: none;">Submit Quiz</button>
             </form>
         {% endif %}
     </div>
+
+    <script>
+        let currentQuestionIndex = 0;
+        let questions = document.querySelectorAll(".question");
+        let totalQuestions = questions.length;
+
+        function showQuestion(index) {
+            questions.forEach(q => q.style.display = "none");
+            questions[index].style.display = "block";
+            document.getElementById("prevBtn").style.display = index > 0 ? "inline-block" : "none";
+            document.getElementById("nextBtn").style.display = index < totalQuestions - 1 ? "inline-block" : "none";
+            document.getElementById("submitBtn").style.display = index === totalQuestions - 1 ? "inline-block" : "none";
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < totalQuestions - 1) {
+                currentQuestionIndex++;
+                showQuestion(currentQuestionIndex);
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion(currentQuestionIndex);
+            }
+        }
+
+        function readQuestion() {
+            let questionText = questions[currentQuestionIndex].querySelector("legend").innerText;
+            let options = questions[currentQuestionIndex].querySelectorAll("span");
+            let optionsText = Array.from(options).map(option => option.innerText).join(". ");
+            let fullText = questionText + ". " + optionsText;
+            
+            const speech = new SpeechSynthesisUtterance(fullText);
+            // speech.onend = function() {
+            //     recognition.start();
+            // };
+            
+            window.speechSynthesis.speak(speech);
+        }
+
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = true;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = function(event) {
+            let voiceCommand = event.results[event.results.length - 1][0].transcript.toLowerCase();
+            console.log("User said:", voiceCommand);
+            processVoiceCommand(voiceCommand);
+        };
+
+        function processVoiceCommand(command) {
+            const numberMap = {"one": "1", "two": "2", "three": "3", "four": "4", "five": "5","for":"4","to":"2"};
+            for (let word in numberMap) {
+                command = command.replace(new RegExp(word, "g"), numberMap[word]);
+            }
+            
+            let match = command.match(/option (\d+)/);
+            if (match) {
+                let optionNumber = match[1];
+                let selectedOption = questions[currentQuestionIndex].querySelector("span[id$='" + optionNumber + "']");
+                if (selectedOption) {
+                    selectedOption.previousElementSibling.checked = true;
+                }
+            }
+            
+            if (command.includes("read")) {
+                readQuestion();
+            } else if (command.includes("next")) {
+                nextQuestion();
+            } else if (command.includes("previous")) {
+                prevQuestion();
+            } else if (command.includes("submit")) {
+                document.getElementById("quiz-form").submit();
+            }
+        }
+
+        recognition.start();
+        showQuestion(0);
+    </script>
 </body>
+
 </html>

@@ -89,6 +89,37 @@
             margin-bottom: 25px;
             opacity: 0.9;
         }
+        
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 10%;
+            background:#8857bc ;
+            border: 1px solid #ddd;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            /* min-width: 120px; */
+            border-radius: 15px;
+            z-index: 100;
+        }
+
+        .user-dropdown a {
+            display: flex;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .user-dropdown a:hover {
+            background: linear-gradient(135deg, #6a11cb 0%, #2857a8 100%);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .user-profile:hover .user-dropdown {
+            display: flex;
+            flex-direction: column;
+        }
         .user-profile {
             position: absolute;
             right: 30px;
@@ -437,6 +468,11 @@
         <div class="menu-icon">📝</div>
         <div>My Quizzes</div>
     </a>
+
+    <a href="{% url 'achievements' %}" class="menu-item">
+        <div class="menu-icon">🏆</div>
+        <div>Achievements</div>
+    </a>
 </div>
 
 <div class="main-content">
@@ -450,6 +486,10 @@
             <div class="user-info">
                 <div class="user-name">{{ user.name }}</div>
                 <div class="user-department">Student</div>
+            </div>
+            <div class="user-dropdown">
+                <a href="{% url 'educator_dashboard' %}">Dashboard</a>
+                <a href="{% url 'logout' %}">Logout</a>
             </div>
         </div>
     </div>

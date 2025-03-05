@@ -46,59 +46,83 @@ def quiz_setup(request):
     })
 def quiz_questions(request):
     student = get_object_or_404(Student, user=request.user)
-    subject_name = request.GET.get('subject')
-    difficulty = request.GET.get('difficulty')
-    question_count = int(request.GET.get('count', 10))
-    # Fetch all quizzes directly related to this subject name
-    quizzes = Quiz.objects.filter(title__icontains=subject_name)
 
-    # Get all questions linked to these quizzes
-    questions = Question.objects.filter(quiz__in=quizzes)
+    if request.method == 'GET':
+        subject_name = request.GET.get('subject')
+        difficulty = request.GET.get('difficulty')
+        question_count = int(request.GET.get('count', 10))
 
-    # Randomly select requested number of questions
-    questions_list = list(questions)
-    random.shuffle(questions_list)
-    selected_questions = questions_list[:question_count]
+        # Fetch quizzes matching subject
+        quizzes = Quiz.objects.filter(title__icontains=subject_name)
 
-    if not selected_questions:
+        # Get all questions from these quizzes
+        questions = Question.objects.filter(quiz__in=quizzes)
+
+        # Shuffle and select required number of questions
+        questions_list = list(questions)
+        random.shuffle(questions_list)
+        selected_questions = questions_list[:question_count]
+
+        if not selected_questions:
+            return render(request, 'students/quiz_questions.html', {
+                'message': "No new questions available for the selected subject."
+            })
+
+        # Store selected question IDs in session
+        request.session['selected_question_ids'] = [q.id for q in selected_questions]
+
         return render(request, 'students/quiz_questions.html', {
-            'message': "No new questions available for the selected subject."
+            'questions': selected_questions
         })
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
+        # Retrieve questions from session (ensures grading is based on displayed questions)
+        selected_question_ids = request.session.get('selected_question_ids', [])
+        questions = Question.objects.filter(id__in=selected_question_ids)
+
+        if not questions.exists():
+            return redirect('some_error_page')  # Handle edge case where session expired
+
         correct_count = 0
         wrong_count = 0
 
-        for question in selected_questions:
+        for question in questions:
             selected_option_id = request.POST.get(f'question_{question.id}')
-            if selected_option_id:
-                selected_option = Option.objects.get(id=selected_option_id)
-                if selected_option.is_correct:
-                    correct_count += 1
-                else:
-                    wrong_count += 1
-            else:
-                wrong_count += 1  # Unanswered questions count as wrong
 
-        total_questions = len(selected_questions)
+            if selected_option_id:
+                try:
+                    # Make sure the selected option belongs to the current question
+                    selected_option = Option.objects.get(id=selected_option_id, question=question)
+                    if selected_option.is_correct:
+                        correct_count += 1
+                    else:
+                        wrong_count += 1
+                except Option.DoesNotExist:
+                    wrong_count += 1  # Invalid option (shouldn't happen in normal case)
+
+            else:
+                wrong_count += 1  # No option selected for this question
+
+        total_questions = len(questions)
         score = (correct_count / total_questions) * 100
 
-        # Assume all questions belong to the same quiz (you could enhance this logic if needed)
-        quiz = selected_questions[0].quiz
+        # Assume all questions are from the same quiz
+        quiz = questions.first().quiz
 
-        # Save the attempt
+        # Save student's attempt
         StudentQuizAttempt.objects.create(
             student=student,
             quiz=quiz,
             score=score
         )
 
+        # Clear session data after grading
+        request.session.pop('selected_question_ids', None)
+
+        # Redirect to result page with scores
         return redirect('quiz_result', correct=correct_count, wrong=wrong_count, score=round(score, 2))
 
-    return render(request, 'students/quiz_questions.html', {
-        'questions': selected_questions
-    })
-    
+    return redirect('some_error_page')  # Fallback if request method is somehow invalid
 def quiz_result(request, correct, wrong, score):
     score=float(score)
     return render(request, 'students/quiz_result.html', {
@@ -154,3 +178,32 @@ def my_quizzes(request):
     }
 
     return render(request, 'students/my_quizzes.html', context)
+def achievements(request):
+    student = Student.objects.get(user=request.user)
+
+    # Query to fetch highest score for each quiz title along with subject and latest attempt time
+    highest_scores = (
+        StudentQuizAttempt.objects
+        .filter(student=student)
+        .values('quiz__title', 'quiz__subject')  # Grouping by title and subject
+        .annotate(
+            highest_score=Max('score'),
+            latest_attempt_time=Max('completed_at')
+        )
+    )
+
+    quizzes = []
+    for item in highest_scores:
+        quizzes.append({
+            'title': item['quiz__title'],
+            'subject': item['quiz__subject'],
+            'highest_score': item['highest_score'],
+            'latest_attempt_time': item['latest_attempt_time']
+        })
+
+    context = {
+        'quizzes': quizzes,
+        'no_quizzes_message': "No quizzes attended. Explore more!" if not quizzes else None
+    }
+
+    return render(request, 'students/achievements.html', context)
