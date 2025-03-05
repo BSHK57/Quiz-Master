@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h2>Welcome to Admin Dashboard</h2>
+    <p>Total Registered Users: {{ users_count }}</p>
+    <p>You can manage users and system settings here.</p>
+    <a href="{% url 'logout' %}">Logout</a>
+</body>
+</html>

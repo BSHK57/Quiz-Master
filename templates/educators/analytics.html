@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Educator Dashboard</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h2 {
+            font-size: 28px;
+            color: #4CAF50;
+        }
+        .form-section {
+            margin: 20px 0;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .message {
+            color: green;
+            font-weight: bold;
+        }
+    </style> -->
+    <link rel="stylesheet" href="/templates/educators/css/styles(1).css">
+</head>
+<!-- <body>
+
+<h2>Welcome to Educator Dashboard</h2>
+<p>Hello, {{ user.username }}!</p>
+<p>You can select the subjects you teach below.</p>
+
+{% if messages %}
+    <div class="message">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-section">
+        <label>Select Subjects:</label><br>
+        <div class="checkbox-group">
+            {% for subject in subjects %}
+                <label>
+                    <input type="checkbox" name="subjects" value="{{ subject.name }}"
+                        {% if subject.name in selected_subject_names %}checked{% endif %}>
+                    {{ subject.name }}
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+    <button type="submit">Save Subjects</button>
+</form>
+
+<p><a href="{% url 'logout' %}">Logout</a></p>
+
+</body> -->
+{% load static %}
+
+{% block content %}
+
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <span>QuizMaster</span>
+            </div>
+            <a href="{% url 'educator_dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'edu_quizzes' %}" class="nav-item">
+                <i class="fas fa-book"></i>
+                <span>My Quizzes</span>
+            </a>
+            <a href="{% url 'Students_board' %}" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Students</span>
+            </a>
+            <a href="{% url 'educator_analytics' %}" class="nav-item active">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="{% url 'educator_dashboard' %}" class="nav-item">
+                <i class="fas fa-trophy"></i>
+                <span>Achievements</span>
+            </a>
+            <a href="{% url 'educator_dashboard' %}" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+
+        <div class="content">
+            <div class="header">
+                <div class="header-title">
+                    <h1>Performance Charts</h1>
+                    <p>Analyse and see the student performance by Graphs</p>
+                </div>
+                <div class="user-menu">
+                    <div class="avatar fas fa-user-circle profile-icon">{{ educator_initials }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ educator.user.username }}</div>
+                        <div class="user-role">{{ educator.subject_specialization }}</div>
+                    </div>
+                    <div class="user-dropdown">
+                        <a href="{% url 'educator_dashboard' %}">Dashboard</a>
+                        <a href="{% url 'logout' %}">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="btn active" onclick="showChart('studentPerformanceChart')">Student Performance</button>
+                <button class="btn" onclick="showChart('quizPerformanceChart')">Quiz Performance</button>
+                <button class="btn" onclick="showChart('questionDifficultyChart')">Question Difficulty</button>
+                <button class="btn" onclick="showChart('passFailChart')">Pass/Fail Ratio</button>
+                <button class="btn" onclick="showChart('quizDistributionChart')">Quiz Distribution</button>
+            </div>
+
+            <!-- Chart Containers -->
+            <div class="chart-container">
+                <h3>Student Performance Chart</h3>
+                <canvas id="studentPerformanceChart"></canvas>
+            </div>
+            <div class="chart-container" style="display: none;">
+                <h3>Quiz Performance Chart</h3>
+                <canvas id="quizPerformanceChart"></canvas>
+            </div>
+            <div class="chart-container" style="display: none;">
+                <h3>Question Difficulty Chart</h3>
+                <canvas id="questionDifficultyChart"></canvas>
+            </div>
+            <div class="chart-container" style="display: none;">
+                <h3>Pass Fail Chart</h3>
+                <canvas id="passFailChart"></canvas>
+            </div>
+            <div class="chart-container" style="display: none;">
+                <h3>Quiz Distribution Chart</h3>
+                <canvas id="quizDistributionChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        console.log("Loading charts...");
+
+        const studentPerformanceData = JSON.parse('{{ student_scores|safe|escapejs }}');
+        const quizPerformanceData = JSON.parse('{{ quiz_performance|safe|escapejs }}');
+        const questionDifficultyData = JSON.parse('{{ question_difficulty|safe|escapejs }}');
+        const passFailData = JSON.parse('{{ pass_fail_ratio|safe|escapejs }}');
+        const quizDistributionData = JSON.parse('{{ quiz_distribution|safe|escapejs }}');
+
+        console.log("Data loaded successfully");
+
+        // Function to show only the selected chart
+        function showChart(chartId) {
+            document.querySelectorAll('.chart-container').forEach(chart => {
+                chart.style.display = "none";
+            });
+            document.getElementById(chartId).parentElement.style.display = "flex";
+
+            // Update active tab button
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="showChart('${chartId}')"]`).classList.add('active');
+        }
+
+        // Student Performance Chart (Bar Chart)
+        new Chart(document.getElementById('studentPerformanceChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: studentPerformanceData.map(d => d.student_name),
+                datasets: [{
+                    label: 'Average Score',
+                    data: studentPerformanceData.map(d => d.avg_score),
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                }]
+            }
+        });
+
+        // Quiz Performance Over Time (Line Chart)
+        new Chart(document.getElementById('quizPerformanceChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: quizPerformanceData.map(d => d.created_at),
+                datasets: [{
+                    label: 'Average Score Over Time',
+                    data: quizPerformanceData.map(d => d.avg_score),
+                    borderColor: 'rgba(255, 99, 132, 0.6)',
+                    fill: false
+                }]
+            }
+        });
+
+        // Question Difficulty Analysis (Horizontal Bar Chart)
+        new Chart(document.getElementById('questionDifficultyChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: questionDifficultyData.map(d => d.text),
+                datasets: [{
+                    label: 'Correct Answers',
+                    data: questionDifficultyData.map(d => d.correct_answers),
+                    backgroundColor: 'rgba(255, 206, 86, 0.6)',
+                }]
+            }
+        });
+
+        // Pass/Fail Ratio per Quiz (Doughnut Chart)
+        new Chart(document.getElementById('passFailChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: passFailData.map(d => d.quiz__title),
+                datasets: [{
+                    label: 'Pass/Fail Ratio',
+                    data: passFailData.map(d => [d.passed, d.failed]).flat(),
+                    backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+                }]
+            }
+        });
+
+        // Quiz Distribution Chart (Pie Chart)
+        new Chart(document.getElementById('quizDistributionChart').getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: quizDistributionData.map(d => d.subject),
+                datasets: [{
+                    label: 'Quizzes Per Subject',
+                    data: quizDistributionData.map(d => d.total),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)'
+                    ],
+                }]
+            }
+        });
+
+        console.log("Charts loaded successfully");
+    </script>
+
+    <!-- Styling for Tabs -->
+
+
+</body>
+{% endblock %}
+
+</html>

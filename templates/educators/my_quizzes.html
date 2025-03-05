@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Educator Dashboard</title>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    
+    <!-- <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h2 {
+            font-size: 28px;
+            color: #4CAF50;
+        }
+        .form-section {
+            margin: 20px 0;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .message {
+            color: green;
+            font-weight: bold;
+        }
+    </style> -->
+    <link rel="stylesheet" href="/templates/educators/css/styles(1).css">
+</head>
+<!-- <body>
+
+<h2>Welcome to Educator Dashboard</h2>
+<p>Hello, {{ user.username }}!</p>
+<p>You can select the subjects you teach below.</p>
+
+{% if messages %}
+    <div class="message">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-section">
+        <label>Select Subjects:</label><br>
+        <div class="checkbox-group">
+            {% for subject in subjects %}
+                <label>
+                    <input type="checkbox" name="subjects" value="{{ subject.name }}"
+                        {% if subject.name in selected_subject_names %}checked{% endif %}>
+                    {{ subject.name }}
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+    <button type="submit">Save Subjects</button>
+</form>
+
+<p><a href="{% url 'logout' %}">Logout</a></p>
+
+</body> -->
+{% load static %}
+
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <span>QuizMaster</span>
+            </div>
+            <a href="{% url 'educator_dashboard' %}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'edu_quizzes' %}" class="nav-item active">
+                <i class="fas fa-book"></i>
+                <span>My Quizzes</span>
+            </a>
+            <a href="{% url 'Students_board' %}" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Students</span>
+            </a>
+            <a href="{% url 'educator_analytics' %}" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="{% url 'educator_dashboard' %}" class="nav-item">
+                <i class="fas fa-trophy"></i>
+                <span>Achievements</span>
+            </a>
+            <a href="{% url 'educator_dashboard' %}" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+
+        <div class="content">
+            <div class="header">
+                <div class="header-title">
+                    <h1>My Quizzes</h1>
+                    <p>Manage your created quizzes and track student performance</p>
+                </div>
+                <div class="user-menu">
+                    <div class="avatar fas fa-user-circle profile-icon">{{ educator_initials }}</div>
+                    <div class="user-info">
+                        <div class="user-name">{{ educator.user.username }}</div>
+                        <div class="user-role">{{ educator.subject_specialization }}</div>
+                    </div>
+                    <div class="user-dropdown">
+                        <a href="{% url 'educator_dashboard' %}">Dashboard</a>
+                        <a href="{% url 'logout' %}">Logout</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-bar" placeholder="Search quizzes..." onkeyup="filterQuizzes()">
+            </div>
+
+            <div class="quiz-grid">
+                {% for quiz_info in quiz_data %}
+                <div class="quiz-card" data-title="{{ quiz_info.quiz.title }}">
+                    <div class="quiz-header">
+                        <h3>{{ quiz_info.quiz.title }}</h3>
+                    </div>
+                    <div class="quiz-body">
+                        <p>{{ quiz_info.num_questions }} Questions</p>
+                        <div class="quiz-stats">
+                            <div class="quiz-stat">
+                                <div class="value">{{ quiz_info.completion_rate }}%</div>
+                                <div class="label">Completion</div>
+                            </div>
+                            <div class="quiz-stat">
+                                <div class="value">{{ quiz_info.avg_score }}%</div>
+                                <div class="label">Avg. Score</div>
+                            </div>
+                            <div class="quiz-stat">
+                                <div class="value">{{ quiz_info.students_count }}</div>
+                                <div class="label">Students</div>
+                            </div>
+                        </div>
+                        <div class="quiz-actions">
+                            <a href="{% url 'edit_quiz' quiz_info.quiz.id %}"><button>Edit</button></a>
+                            <a href="{% url 'view_results' quiz_info.quiz.id %}"><button>View Results</button></a>
+                        </div>
+                    </div>
+                    <div class="quiz-students">
+                        <h4>Student Attempts</h4>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Attempts</th>
+                                        <th>Success Rate (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in quiz_info.student_attempts %}
+                                    <tr>
+                                        <td><strong>{{ student.student }}</strong></td>
+                                        <td>{{ student.attempts }}</td>
+                                        <td>{{ student.success_rate }}%</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td>No attempts yet.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No quizzes available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+   
+
+    <script>
+        function filterQuizzes() {
+            let input = document.getElementById('search-bar').value.toLowerCase();
+            let quizCards = document.querySelectorAll('.quiz-card');
+
+            quizCards.forEach(card => {
+                let title = card.getAttribute('data-title').toLowerCase();
+                if (title.includes(input)) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+    </script>
+</body>
+
+
+</html>
