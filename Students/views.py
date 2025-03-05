@@ -154,3 +154,32 @@ def my_quizzes(request):
     }
 
     return render(request, 'students/my_quizzes.html', context)
+def achievements(request):
+    student = Student.objects.get(user=request.user)
+
+    # Query to fetch highest score for each quiz title along with subject and latest attempt time
+    highest_scores = (
+        StudentQuizAttempt.objects
+        .filter(student=student)
+        .values('quiz__title', 'quiz__subject')  # Grouping by title and subject
+        .annotate(
+            highest_score=Max('score'),
+            latest_attempt_time=Max('completed_at')
+        )
+    )
+
+    quizzes = []
+    for item in highest_scores:
+        quizzes.append({
+            'title': item['quiz__title'],
+            'subject': item['quiz__subject'],
+            'highest_score': item['highest_score'],
+            'latest_attempt_time': item['latest_attempt_time']
+        })
+
+    context = {
+        'quizzes': quizzes,
+        'no_quizzes_message': "No quizzes attended. Explore more!" if not quizzes else None
+    }
+
+    return render(request, 'students/achievements.html', context)

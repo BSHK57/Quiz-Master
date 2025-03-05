@@ -12,5 +12,5 @@ urlpatterns = [
     path('quiz_dashboard/', quiz_dashboard, name='quiz_dashboard'),
 
     path('my_quizzes/', views.my_quizzes, name='my_quizzes'),
-
+    path('achievements/', views.achievements, name='achievements'),
 ]

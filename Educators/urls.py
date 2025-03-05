@@ -9,4 +9,5 @@ urlpatterns = [
     path('educator/Student-board',students_board,name='Students_board'),
     path('educator/dashboard/my_quizzes',my_quizzes,name='edu_quizzes'),
     path('educator/dashboard/Analytics',views.educator_analytics,name='educator_analytics'),
+    path('upload-questions/', views.upload_questions, name='upload_questions'),
 ]
