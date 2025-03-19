@@ -176,7 +176,7 @@ body {
     display: none;
     position: absolute;
     top: -30%;
-    left: -70%;
+    left: -90%;
     background: linear-gradient(135deg, rgba(106, 17, 203, 0.1) 0%, rgba(37, 117, 252, 0.1) 100%);
     border: 1px solid #ddd;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
@@ -241,7 +241,7 @@ body {
 .stat-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 7px 15px rgba(37, 117, 252, 0.2);
-    
+
 }
 
 .stat-card h3 {
@@ -574,7 +574,7 @@ tr td:last-child {
     padding: 5px;
 }
 .table-container{
-    max-height: 250px; 
+    max-height: 250px;
     overflow-y: auto;
     border: 1px solid #ddd;
 }

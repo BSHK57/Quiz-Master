@@ -89,7 +89,7 @@
             margin-bottom: 25px;
             opacity: 0.9;
         }
-        
+
         .user-dropdown {
             display: none;
             position: absolute;
@@ -312,7 +312,7 @@
             background-color: #f0f9ff;
             color: #0284c7;
         }
-        
+
         /* Student specific elements */
         .step-indicator {
             display: flex;
@@ -455,15 +455,14 @@
         <div class="logo-icon">Q</div>
         <div class="logo-text">QuizMaster</div>
     </div>
-    <a href="{% url 'quiz_dashboard' %}" class="menu-item">
-        <div class="menu-icon">📈</div>
-        <div>Analytics</div>
-    </a>
     <a href="#" class="menu-item active">
         <div class="menu-icon">📊</div>
         <div>Dashboard</div>
     </a>
-    
+    <a href="{% url 'quiz_dashboard' %}" class="menu-item">
+        <div class="menu-icon">📈</div>
+        <div>Analytics</div>
+    </a>
     <a href="{% url 'my_quizzes' %}" class="menu-item">
         <div class="menu-icon">📝</div>
         <div>My Quizzes</div>
@@ -479,7 +478,7 @@
     <div class="dashboard-header">
         <div class="welcome-text">Student Dashboard</div>
         <div class="dashboard-title">Welcome back, {{ user.username }}!</div>
-        
+
         <div class="user-profile">
             <div class="profile-pic fas fa-user-circle profile-icon"></div>
             <!-- <div class="profile-pic"></div> -->
@@ -493,7 +492,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="step-indicator">
         <div class="step completed">
             <div class="step-number">1</div>
@@ -508,11 +507,11 @@
             <div class="step-label">Start Quiz</div>
         </div>
     </div>
-    
+
     {% if error_message %}
         <p class="error-message">{{ error_message }}</p>
     {% endif %}
-    
+
     <div class="stat-card">
         <form method="post" id="subject-form">
             {% csrf_token %}
@@ -523,7 +522,7 @@
                 <option value="Biology">Biology</option>
                 <option value="Chemistry">Chemistry</option>
                 <option value="Physics">Physics</option>
-                <option value="Science">Computer Science</option>
+                <option value="Science">Science</option>
                 {% for subject in subjects %}
                     <option value="{{ subject.id }}" {% if selected_subject and subject.id == selected_subject.id %}selected{% endif %}>
                         {{ subject.name }}
@@ -533,13 +532,13 @@
             <button type="submit">Show Faculty</button>
         </form>
     </div>
-    
+
     {% if selected_subject %}
         <div class="faculty-list" id="faculty-section">
             <div class="section-title">
                 <h3 class="section-heading">Faculty Handling {{ selected_subject.name }}</h3>
             </div>
-            
+
             {% if faculty_list %}
                 {% for faculty in faculty_list %}
                     <div class="faculty-card">
@@ -559,7 +558,7 @@
             </form>
         </div>
     {% endif %}
-    
+
     <div style="margin-top: 20px; text-align: center;">
         <a href="{% url 'logout' %}">Logout</a>
     </div>
